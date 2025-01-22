@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/Meteoromer/DoorControlCenter">
+    <file compressed="true" preprocess="xml-stripblanks">layout/mainWindow.ui</file>
+  </gresource>
+</gresources>
