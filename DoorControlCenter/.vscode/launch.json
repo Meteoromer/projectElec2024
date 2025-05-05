@@ -1,0 +1,26 @@
+{
+    // Configurations for debugging and running the Meson project
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build and Run Meson Project",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/src/DoorControlCenter", // Replace 'your_executable' with the actual executable name
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Meson: Build src/DoorControlCenter:executable"
+        }
+    ]
+}
