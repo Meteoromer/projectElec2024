@@ -12,7 +12,7 @@
           <object class="GtkLabel">
             <property name="visible">true</property>
             <property name="expand">true</property>
-            <property name="label" translatable="yes">My first label</property>
+            <property name="label" translatable="yes">My first label!!!</property>
           </object>
           <packing>
             <property name="left_attach">0</property>

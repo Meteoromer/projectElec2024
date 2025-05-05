@@ -1,8 +1,6 @@
-#!/usr/bin/env -S vala --pkg gtk+-3.0
-
 using Gtk;
 
-[GtkTemplate (ui = "/org/Meteoromer/DoorControlCenter/layout/mainWindow.ui")]
+[GtkTemplate (ui = "/org/Meteoromer/DoorControlCenter/ui/mainWindow.ui")]
 public class BarWindow : Gtk.Window {
 	public string text {
 		get { return entry.text; }
