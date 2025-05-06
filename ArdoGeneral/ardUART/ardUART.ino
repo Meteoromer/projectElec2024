@@ -12,6 +12,7 @@ int delayval = 50; // delay for half a second
 // Define RX and TX pins
 const int rxPin = 9;
 const int txPin = 10;
+const int pinLock = 5;
 
 // Create a SoftwareSerial object
 SoftwareSerial mySerial(rxPin, txPin);
@@ -31,6 +32,8 @@ void setup() {
     delay(delayval); 
     // Delay for a period of time (in milliseconds).
   }
+  pinMode(pinLock,OUTPUT);
+
   // Start hardware serial communication for debugging
   Serial.begin(9600);
   while (!Serial);
@@ -45,9 +48,13 @@ void loop() {
   if (mySerial.available()) {
     
     char incomingByte = mySerial.read();
-    
+    Serial.println(incomingByte);
+    while(!mySerial.available());// בשביל להתחמק משאריות של ה-אנטר במחסנית של הuart.
+    while(mySerial.available()){
+      mySerial.read();
+    }
     if (incomingByte == '1'){
-      
+      digitalWrite(pinLock, HIGH);
       int red = 0;
       int gre = 255;
       int blue = 0;
@@ -73,9 +80,37 @@ void loop() {
         delay(delayval); 
         // Delay for a period of time (in milliseconds).
       }
-      
+      digitalWrite(pinLock, LOW);
     }
-    Serial.print(incomingByte);
+
+    if (incomingByte == '2'){
+      int red = 0;
+      int gre = 0;
+      int blue = 255;
+      for(int i = 0; i < NUMPIXELS; i++){
+        // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+        strip.setPixelColor(i, gre, red, blue);
+        strip.show(); 
+        // This sends the updated pixel color to the hardware.
+ 
+        // Delay for a period of time (in milliseconds).
+        
+      }
+      
+      delay(4000);
+      
+      red = 255;
+      gre = 0;
+      blue = 0;
+      for(int i = 0; i < NUMPIXELS; i++){
+        // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+        strip.setPixelColor(i, gre, red, blue);
+        strip.show(); 
+        // This sends the updated pixel color to the hardware.
+        // Delay for a period of time (in milliseconds).
+      }
+    }
+    
   }
 
   // Check if data is available to read from the hardware serial
