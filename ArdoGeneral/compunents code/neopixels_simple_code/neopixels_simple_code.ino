@@ -1,8 +1,8 @@
 #include <Adafruit_NeoPixel.h>
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN  6
+#define PIN  4
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS  12
+#define NUMPIXELS  24
 // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -19,9 +19,9 @@ void loop() {
 
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
 
-  int red = random(0, 255);
-  int gre = random(0, 255);
-  int blue = random(0, 255);
+  int red = random(0, 10);
+  int gre = random(0, 10);
+  int blue = random(0, 10);
   for(int i = 0; i < NUMPIXELS; i++){
     // pixels.Color takes GRB values, from 0,0,0 up to 255,255,255 [in the order GRB]
     strip.setPixelColor(i, gre, red, blue);
