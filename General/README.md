@@ -1303,7 +1303,7 @@ void playAudio(const char* filename) {
     file.seek(44);
 
     // Read
-
+```
 --------------------
 
 User prompt 14 of 14 - 28/01/2025, 15:34:49:
