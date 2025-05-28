@@ -24,6 +24,7 @@ public class MainWindow : Gtk.Window {
 	
 	private Gtk.Widget videoWidget;
 	private Gst.Pipeline pipeline;
+	private Pid ttsPid;
 	
 	public MainWindow(){
 		//TODO: Change source to a real camera source
@@ -63,15 +64,15 @@ public class MainWindow : Gtk.Window {
 	private void openCamera (Gtk.Button button) {
 		if(videoRevealer.reveal_child){
 			videoRevealer.reveal_child = false;
-			message ("Closing camera");
 			pipeline.set_state (Gst.State.PAUSED);
+			message ("Closing camera");
 			statusBar.push (0, "Closing camera...");
 
 		}
 		else{
 			videoRevealer.reveal_child = true;
-			message ("Opening camera");
 			pipeline.set_state (Gst.State.PLAYING);
+			message ("Opening camera");
 			statusBar.push (0, "Opening camera...");
 		}
 		button.label = videoRevealer.reveal_child ? "Close Camera" : "Open Camera";
@@ -81,6 +82,21 @@ public class MainWindow : Gtk.Window {
 	[GtkCallback]
 	private void sendTTSMessage (Gtk.Button button) {
 		message ("Sending TTS message: %s\n", ttsEntry.text);
+		string[] spawnArgs = { "src/tts", ttsEntry.text };
+		try{
+			Process.spawn_async (null, spawnArgs, null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out ttsPid);
+			message("Generating TTS message");
+			statusBar.push (0, "Generating TTS message...");
+			ChildWatch.add (ttsPid, (pid, status) => {
+				message ("TTS process finished");
+				statusBar.push (0, "TTS message was generated successfully");
+				Process.close_pid (pid);
+			});
+		}
+		catch(Error e) {
+			warning ("Failed to spawn piper process: %s", e.message);
+			statusBar.push (0, "Failed to send TTS message");
+		}
 	}
 
 	[GtkCallback]
