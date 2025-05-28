@@ -52,16 +52,13 @@
           <object class="GtkRevealer" id="videoRevealer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="transition-type">none</property>
-            <property name="transition-duration">1000</property>
+            <property name="transition-type">5</property>
+            <property name="transition-duration">500</property>
             <child>
               <object class="GtkBox" id="videoBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
-                <child>
-                  <placeholder/>
-                </child>
                 <child>
                   <object class="GtkLabel" id="distance">
                     <property name="visible">True</property>
