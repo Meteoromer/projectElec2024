@@ -34,7 +34,7 @@
         </child>
         <child>
           <object class="GtkButton" id="cameraButton">
-            <property name="label" translatable="yes">Open Camera</property>
+            <property name="label" translatable="yes">🞂 Open Camera</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -60,7 +60,7 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="distance">
+                  <object class="GtkLabel" id="distanceLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">label</property>

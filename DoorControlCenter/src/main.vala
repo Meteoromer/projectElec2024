@@ -15,6 +15,8 @@ public class MainWindow : Gtk.Window {
 	[GtkChild]
 	unowned Gtk.Box videoBox;
 	
+	[GtkChild]
+	unowned Gtk.Label distanceLabel;
 	
 	[GtkChild]
 	unowned Gtk.Entry ttsEntry;
@@ -25,6 +27,8 @@ public class MainWindow : Gtk.Window {
 	private Gtk.Widget videoWidget;
 	private Gst.Pipeline pipeline;
 	private Pid ttsPid;
+
+	private float distance = 0.0f;
 	
 	public MainWindow(){
 		//TODO: Change source to a real camera source
@@ -33,7 +37,7 @@ public class MainWindow : Gtk.Window {
 		var val = GLib.Value(typeof(Gtk.Widget));
 		gtksink.get_property("widget",ref val);
 		videoWidget = (Gtk.Widget)val.get_object();
-		videoBox.pack_start(videoWidget, true, false, 0);
+		videoBox.pack_start(videoWidget, true, true, 0);
 		videoBox.reorder_child (videoWidget, 0);
 		pipeline = new Gst.Pipeline ("pipeline");
 		pipeline.add_many (source, gtksink);
@@ -42,7 +46,7 @@ public class MainWindow : Gtk.Window {
 		}
 
 		pipeline.set_state (Gst.State.PLAYING);
-		var ret = pipeline.get_state(null, null, 2 * Gst.SECOND);
+		var ret = pipeline.get_state(null, null, Gst.SECOND);
 		if(ret == Gst.StateChangeReturn.SUCCESS || ret == Gst.StateChangeReturn.ASYNC){
 			var sinkCaps = gtksink.get_static_pad("sink").get_current_caps();
 			weak Gst.Structure structure = sinkCaps.get_structure(0);
@@ -53,6 +57,12 @@ public class MainWindow : Gtk.Window {
 		}
 		videoWidget.show();
 		pipeline.set_state(Gst.State.PAUSED);
+
+		Timeout.add(500, () => {
+			distance += 0.1f; //TODO: Add GET request to ESP32
+			distanceLabel.set_text (@"Distance: $distance cm"); 
+			return true; // Keep the timeout active
+		});
 	}
 
 	[GtkCallback]
@@ -75,7 +85,7 @@ public class MainWindow : Gtk.Window {
 			message ("Opening camera");
 			statusBar.push (0, "Opening camera...");
 		}
-		button.label = videoRevealer.reveal_child ? "Close Camera" : "Open Camera";
+		button.label = videoRevealer.reveal_child ? "🞃 Close Camera" : "🞂 Open Camera";
 		
 	}
 
