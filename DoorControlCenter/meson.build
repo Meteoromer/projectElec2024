@@ -5,6 +5,7 @@ dependencies = [
     dependency('gobject-2.0'),
     dependency('gtk+-3.0'),
     dependency('gstreamer-1.0'),
+    dependency('libsoup-3.0')
 ]
 
 message('Creating python virtual environment...')
