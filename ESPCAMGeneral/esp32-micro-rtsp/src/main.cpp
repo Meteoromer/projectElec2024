@@ -1,83 +1,72 @@
 #include "OV2640.h"
 #include <WiFi.h>
-#include <WebServer.h>
-#include <WiFiClient.h>
-
-#include "SimStreamer.h"
+#include <ESPmDNS.h>
 #include "OV2640Streamer.h"
 #include "CRtspSession.h"
-
-#include "wifikeys.h"
+#include "SimStreamer.h"
+#include "wifikeys.h"  // Define your ssid and password here
 
 OV2640 cam;
-
-WiFiServer rtspServer(8554);
-
-void setup()
-{
-    Serial.begin(115200);
-    while(!Serial);
-    cam.init(esp32cam_aithinker_config);
-    rtspServer.begin();
-
-    IPAddress ip;
-
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(F("."));
-    }
-    ip = WiFi.localIP();
-    Serial.println(F("WiFi connected"));
-    Serial.println("");
-    Serial.println(ip);
-}
-
-CStreamer *streamer;
-CRtspSession *session;
+WiFiServer rtspServer(554);
+CStreamer *streamer = nullptr;
+CRtspSession *session = nullptr;
 WiFiClient client;
 
-void loop()
-{
+uint32_t lastImageTime = 0;
+uint32_t msecPerFrame = 100;
 
-    uint32_t msecPerFrame = 100;
-    static uint32_t lastimage = millis();
 
-    //If we have an active client connection, 
-    //just service that until gone
-    if(session) {
-        session->handleRequests(0); // we don't use a timeout here,
-        // instead we send only if we have new enough frames
+void setup() {
+  Serial.begin(115200);
+  //while (!Serial);
 
-        uint32_t now = millis();
-        // handle clock rollover
-        if(now > lastimage + msecPerFrame || now < lastimage) { 
-            session->broadcastCurrentFrame(now);
-            lastimage = now;
+  // Initialize camera with AI Thinker configuration
+  cam.init(esp32cam_aithinker_config);
 
-            // check if we are overrunning our max frame rate
-            now = millis();
-            if(now > lastimage + msecPerFrame)
-                printf("warning exceeding max frame rate of %d ms\n", now - lastimage);
-        }
+  // Connect to WiFi
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected");
+  Serial.println(WiFi.localIP());
 
-        if(session->m_stopped) {
-            delete session;
-            delete streamer;
-            session = NULL;
-            streamer = NULL;
-        }
+  if (!MDNS.begin("esp32cam")){
+    Serial.println("Error setting up MDNS responder!");
+  } 
+  else{
+    Serial.println("mDNS responder started : esp32cam.local");
+  }
+
+
+  // Start RTSP server
+  rtspServer.begin();
+}
+
+void loop() {
+
+  if (session) {
+    session->handleRequests(0);  // Handle RTSP requests
+
+    uint32_t now = millis();
+    if (now > lastImageTime + msecPerFrame || now < lastImageTime) {
+      session->broadcastCurrentFrame(now);
+      lastImageTime = now;
     }
-    else {
-        client = rtspServer.accept();
 
-        if(client) {
-            // our streamer for UDP/TCP based RTP transport
-            streamer = new OV2640Streamer(&client, cam); 
-            // our threads RTSP session and state
-            session = new CRtspSession(&client, streamer); 
-        }
+    if (session->m_stopped) {
+      delete session;
+      delete streamer;
+      session = nullptr;
+      streamer = nullptr;
     }
+  } else {
+    client = rtspServer.accept();
+    if (client) {
+      streamer = new OV2640Streamer(&client, cam);
+      session = new CRtspSession(&client, streamer);
+    }
+  }
 }
