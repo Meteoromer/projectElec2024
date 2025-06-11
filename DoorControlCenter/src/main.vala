@@ -11,6 +11,9 @@ public class MainWindow : Gtk.Window {
 	}
 	
 	[GtkChild]
+	unowned Gtk.Button cameraButton;
+
+	[GtkChild]
 	unowned Gtk.Revealer videoRevealer;
 	
 	[GtkChild]
@@ -34,8 +37,9 @@ public class MainWindow : Gtk.Window {
 	private float distance = 0.0f;
 
 	private int qosCount = 0;
+	private bool busMessaging = false;
 
-	private string camURI = "rtsp://192.168.226.76:554";
+	private string camURI = "rtsp://esp32cam.local/mjpeg/1";
 	private string espURI = "http://192.168.226.10";
 
 	public MainWindow(){
@@ -79,6 +83,8 @@ public class MainWindow : Gtk.Window {
 			var dbinCaps = dbinPad.get_current_caps();
 			message(@"Decodebin pad was added:\n$(dbinCaps.to_string())");
 			if (dbinCaps != null && dbinCaps.to_string().contains("video")) {
+				cameraButton.set_sensitive(true);
+				statusBar.push(0, "Stream is ready");
 				int width = 0, height = 0;
 				weak Gst.Structure structure = dbinCaps.get_structure(0);
 				if (structure != null) {
@@ -101,33 +107,35 @@ public class MainWindow : Gtk.Window {
     		}
 		});
 
-		//linked &= depay.link(queue);
-		//linked &= queue.link(decoder);
-		//linked &= decoder.link(convert);
 		if(!convert.link(gtksink)){
 			warning("couldn't link");
 		}
 
 		pipeline.set_state (Gst.State.PLAYING);
-		var bus = pipeline.get_bus();
-		bus.add_signal_watch();
-		bus.message.connect ((bus, msg) =>{
-			switch (msg.type){
-				case Gst.MessageType.QOS:
+		//Debugging stuff --------------------------------
+		if(busMessaging){
+			var bus = pipeline.get_bus();
+			bus.add_signal_watch();
+			bus.message.connect ((bus, msg) =>{
+				switch (msg.type){
+					case Gst.MessageType.QOS:
 					qosCount++;
 					if (qosCount % 100 == 0) {
 						message("QOS message received: %d", qosCount);
 					}
 					break;
-				case Gst.MessageType.ELEMENT:
+					case Gst.MessageType.ELEMENT:
 					message("Element specific message from: %s\nCountens: %s", msg.src.get_name(), msg.get_structure().to_string());
 					break;
-				default:
+					default:
 					message("Bus message recieved: %s", msg.type.to_string());
 					break;
-			}		
-		});
-		
+				}		
+			});
+		}
+		//------------------------------------------------
+		cameraButton.set_sensitive (false);
+		statusBar.push (0, "Initializing stream...");
 		videoWidget.show();
 
 		Timeout.add(500, () => {
@@ -246,6 +254,7 @@ public class MainWindow : Gtk.Window {
 		});
 	}
 }
+
 public void main (string[] args) {
 	Gtk.init (ref args);
 	Gst.init (ref args);
@@ -253,5 +262,5 @@ public void main (string[] args) {
 	var app = new MainWindow ();
 	app.show_all ();
 
-	Gtk.main ();
+	Gtk.main();
 }
